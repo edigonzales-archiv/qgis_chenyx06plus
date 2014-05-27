@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<baselayers>
+
+    <baselayer id="avwms" title="Amtliche Vermessung" type="wms">
+        <url>http://www.sogis1.so.ch/cgi-bin/sogis/sogis_grundbuch.wms</url>
+        <layers>BBFL,BBFLPROJ,EOFL,EOLI,EOPK,BBOBJ,NKNA,RLLI,LSFLPROJ,LSFL,SRFL,LSGP,LSNR,FPPK,LOKPOS,GEBADR</layers>
+        <format>image/png</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>    
+        
+    <baselayer id="ch_default_lv03" title="CHENyx06 (LV03)" type="pg">
+        <schema>ch_default</schema>
+        <table>dreiecke</table>
+        <geom>the_geom_lv03</geom>
+        <key>ogc_fid</key>
+        <style>dreiecke/ch_default.qml</style>
+    </baselayer>      
+
+    <baselayer id="dtmav" title="DTM AV" type="wms">
+        <url>http://www.sogis1.so.ch/cgi-bin/sogis/sogis_dtm_dom.wms</url>
+        <layers>dtm_av_shade2m</layers>
+        <format>image/png</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>    
+    
+    <baselayer id="domav" title="DOM AV" type="wms">
+        <url>http://www.sogis1.so.ch/cgi-bin/sogis/sogis_dtm_dom.wms</url>
+        <layers>dom_av_shade2m</layers>
+        <format>image/png</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>        
+    
+    <baselayer id="gemgre" title="Gemeindegrenzen" type="wfs">
+        <url>http://www.sogis1.so.ch/cgi-bin/sogis/wfs/sogis.wfs</url>
+        <typename>Gemeindegrenzen-1---10-000-AV</typename>
+        <crs>EPSG:21781</crs>   
+        <style>gemeindegrenzen/gemeindegrenzen.qml</style>
+    </baselayer>      
+
+    <baselayer id="lfp1+2" title="Lagefixpunkte 1 + 2" type="wms">
+        <url>http://wms.geo.admin.ch/</url>
+        <layers>ch.swisstopo.fixpunkte-lage-lfp1,ch.swisstopo.fixpunkte-lage-lfp2,ch.swisstopo.fixpunkte-lage-lv95</layers>
+        <format>image/png</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>
+
+    <baselayer id="ortho07" title="Orthofoto Kt. SO" type="wms">
+        <url>http://www.sogis1.so.ch/cgi-bin/sogis/sogis_ortho.wms</url>
+        <layers>Ortho_SO</layers>
+        <format>image/jpeg</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>
+        
+    
+    <baselayer id="tsp2" title="Transformationstützpunkte 2" type="wms">
+        <url>http://wms.geo.admin.ch/</url>
+        <layers>ch.swisstopo.fixpunkte-lage-tsp2</layers>
+        <format>image/png</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>
+
+    <baselayer id="uep" title="Übersichtsplan" type="wms">
+        <url>http://www.sogis1.so.ch/cgi-bin/sogis/sogis_uep.wms</url>
+        <layers>uep</layers>
+        <format>image/png</format>
+        <crs>EPSG:21781</crs>
+    </baselayer>
+    
+
+
+
+    
+
+    
+    
+</baselayers>

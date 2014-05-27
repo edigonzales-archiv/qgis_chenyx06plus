@@ -1,0 +1,255 @@
+# -*- coding: utf-8 -*-
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+from PyQt4 import QtXml
+from qgis.core import *
+from qgis.gui import *
+import os
+
+from dbTools import DbObj
+import utils
+
+class ExportFineltra( QObject ):
+    
+    def __init__(self):
+        
+        self.settings = QSettings("CatAIS","chenyx06+")
+        
+        self.host =  self.settings.value("db/host").toString() 
+        self.database = self.settings.value("db/database").toString() 
+        self.port = self.settings.value("db/port").toString() 
+        self.schema = self.settings.value("db/schema").toString()
+        self.user = self.settings.value("db/username").toString() 
+        self.userpassword = self.settings.value("db/password").toString()   
+        self.admin = self.settings.value("db/admin").toString() 
+        self.adminpassword = self.settings.value("db/adminpassword").toString() 
+        self.tempdir = self.settings.value("temp/dir").toString()
+
+        self.connected = False
+
+
+    def run( self ):
+
+        if self.host == "" or self.database == "" or self.port == "" or self.schema == "" or self.admin == "" or self.adminpassword == "":
+            QMessageBox.warning( None, "CHENyx06+", "No database parameter set.")
+            return
+        else:
+            self.dbobj = DbObj("default", "pg",  self.host,  self.port,  self.database,  self.admin,  self.adminpassword)
+            self.connected = self.dbobj.connect()
+
+        if self.tempdir == "":
+            QMessageBox.warning( None, "CHENyx06+", "No output directory set.")
+            return
+            
+            
+        linesTriangles = []
+        linesPoints03 = []
+        linesPoints95 =[]
+
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        try:
+            # Get the triangle definition.
+            resultTriangles = self.dbobj.read( "SELECT * FROM "+self.schema+".dreiecke_tsp")
+            if len(resultTriangles['OGC_FID']) % 3 != 0:
+                QMessageBox.warning( None, "CHENyx06+", "Ups, Number of points not divisble by three.")
+                return
+            
+            for i in range(len(resultTriangles['OGC_FID'])/3):
+                lineTriangle = str("%-7s") % (i+1)
+                lineTriangle += str("%-15s") % resultTriangles['TSP_NUMMER'][i*3]
+                lineTriangle += str("%-15s") % resultTriangles['TSP_NUMMER'][i*3+1]
+                lineTriangle += str("%-25s") % resultTriangles['TSP_NUMMER'][i*3+2]
+                lineTriangle += str("2525")                
+                linesTriangles.append(lineTriangle)
+                
+            # Get LV03-Coords.
+            # Komisch: SELECT DISTINCT auf Geometrien macht bei LV95 Probleme, dh. es fehlen 10 Punkte?!?.
+            # -> Query geändert (wird aber langsamer), DISTINCT erst am Ende auf Nummer.
+            # Immerhin könnte man so wahrscheinlich noch ne Toleranz einbauen, da jetzt über Distance 
+            # zugeordnet wird.
+            query = """SELECT DISTINCT ON (nummer) ogc_fid, nummer, round(ST_X(the_geom)::numeric, 3) as ycoord, round(ST_Y(the_geom)::numeric, 3) as xcoord
+FROM
+(
+ SELECT 1 as ogc_fid, a.nummer, a.the_geom
+ FROM """+self.schema+""".tsp_lv03 as a,
+ (
+    SELECT (ST_DumpPoints(the_geom_lv03)).geom as the_geom
+    FROM """+self.schema+""".dreiecke
+ ) as b
+ WHERE a.the_geom && b.the_geom
+ AND ST_Distance(ST_SnapToGrid(b.the_geom, 0.001), ST_SnapToGrid(a.the_geom, 0.001)) = 0
+) as c
+WHERE geometrytype(the_geom) = 'POINT'
+"""
+            
+            resultPoints03 = self.dbobj.read(query)
+
+            for i in range(len(resultPoints03['OGC_FID'])):
+                linePoint03 = str("%-16s") % resultPoints03['NUMMER'][i]
+                linePoint03 += str("%-12.3f") % float(resultPoints03['YCOORD'][i])
+                linePoint03 += str("%10.3f") % float(resultPoints03['XCOORD'][i])
+                linesPoints03.append(linePoint03)
+
+            # Get LV95-Coords.
+            query = """SELECT DISTINCT ON (nummer) ogc_fid, nummer, round(ST_X(the_geom)::numeric, 3) as ycoord, round(ST_Y(the_geom)::numeric, 3) as xcoord
+FROM
+(
+ SELECT 1 as ogc_fid, a.nummer, a.the_geom
+ FROM """+self.schema+""".tsp_lv95 as a,
+ (
+    SELECT (ST_DumpPoints(the_geom_lv95)).geom as the_geom
+    FROM """+self.schema+""".dreiecke
+ ) as b
+ WHERE a.the_geom && b.the_geom
+ AND ST_Distance(ST_SnapToGrid(b.the_geom, 0.001), ST_SnapToGrid(a.the_geom, 0.001)) = 0
+) as c
+WHERE geometrytype(the_geom) = 'POINT'
+"""
+            
+            resultPoints95 = self.dbobj.read(query)
+
+            for i in range(len(resultPoints95['OGC_FID'])):
+                linePoint95 = str("%-15s") % resultPoints95['NUMMER'][i]
+                linePoint95 += str("%-12.3f") % float(resultPoints95['YCOORD'][i])
+                linePoint95 += str("%-12.3f") % float(resultPoints95['XCOORD'][i])
+                linesPoints95.append(linePoint95)
+                
+        except KeyError as detail:
+            QApplication.restoreOverrideCursor()            
+            QMessageBox.warning( None, "CHENyx06+", "Database: KeyError Exception.")
+            print "Database: KeyError Exception."
+            print str(detail)
+            return 
+
+        # Write everything into the file.
+        time = QDateTime.currentDateTime()
+        fileSuffix = str(time.toString(Qt.ISODate)).replace(":", "").replace("-", "")
+        filePath = os.path.join(str(self.tempdir), str("fineltra") + str("_") + fileSuffix + str(".dat"))
+
+        try:
+            fh = open(filePath, "w")
+            fh.write("Kanton Solothurn / Amt fuer Geoinformation - Amtliche Vermessung\n")
+            fh.write("Arbeitsdatei fuer die Koordinatentransformation\n")
+            fh.write("Dreiecksvermaschungsdefinition fuer: " + self.schema + "\n")
+        
+            for i in range(len(linesTriangles)):
+                fh.write(linesTriangles[i])
+                fh.write("\n")
+                
+            fh.write("-999\n")
+            fh.write("$$PK LV03-Koordinaten\n")
+            
+            for i in range(len(linesPoints03)):
+                fh.write(linesPoints03[i])
+                fh.write("\n")
+
+            fh.write("-999\n")
+            fh.write("$$PK LV95-Koordinaten\n")
+            
+            for i in range(len(linesPoints95)):
+                fh.write(linesPoints95[i])
+                fh.write("\n")            
+            
+        except IOError as detail:
+            QApplication.restoreOverrideCursor()            
+            QMessageBox.warning( None, "CHENyx06+", "Cannot open file.")
+            print "CHENyx06+: IOError Exception."
+            print str(detail)
+        else:
+            fh.close()
+            QApplication.restoreOverrideCursor()
+            
+            count03 = len(resultPoints03['OGC_FID'])
+            count95 = len(resultPoints95['OGC_FID'])
+            if (count03 != count95):
+                info = "<br><br>But something went wrong: <br>Number of LV03-Points: " + str(count03) + "<br>Number of LV95-Points: " + str(count95) 
+            else: 
+                info = ""
+            
+            QMessageBox.warning( None, "CHENyx06+", "Fineltra file written:<br><br><i>" + filePath + "</i>" + info)
+
+
+#        srs = iface.mapCanvas().mapRenderer().destinationCrs().authid()
+#        if srs == "EPSG:21781" or srs == "EPSG:2056":
+#            pass
+#        else:
+#            QMessageBox.warning( None, "", "Wrong CRS: " + srs + "<br>Should be EPSG:21781 or EPSG:2056")
+#            return
+#            
+#        if srs == "EPSG:2056":
+#            referenceFrame = "lv95"
+#            deleteReferenceFrame = "lv03"
+#        else:
+#            referenceFrame = "lv03"
+#            deleteReferenceFrame = "lv95"
+#
+#
+#
+#        if self.connected == True:
+#            lv03Sql = ""
+#            result = self.dbobj.read( "SELECT nummer FROM "+self.schema+".tsp_lv03 EXCEPT SELECT nummer FROM "+self.schema+".tsp_lv95" )
+#            try:
+#                if len(result['NUMMER']) == 0:
+#                    QMessageBox.information( None, "", "No missing LV95-TSP.")
+#                else:
+#                    for i in range(len(result['NUMMER'])):
+#                        if i == 0:
+#                            lv03Sql += "("
+#                            lv03Sql += "'" + str(result['NUMMER'][i]) + "'"
+#                        else:
+#                            lv03Sql += ", "
+#                            lv03Sql += "'" + str(result['NUMMER'][i]) + "'"
+#                    lv03Sql += ")"
+#                    
+#                    table = {}
+#                    table["type"] = "pg"        
+#                    table["title"] = "Fehlende TSP (LV95)"
+#                    table["schema"] = self.schema
+#                    table["table"] = "tsp_lv03"
+#                    table["geom"] = "the_geom"
+#                    table["key"] = "ogc_fid"            
+#                    table["sql"] = "nummer in "+ lv03Sql
+#                    table["group"] = ""
+#                    table["style"] = "tsp/tsp_missing.qml"
+#                    vlayerMissingTspLv95 = utils.doShowSimpleLayer( iface, table, False, False, False, True, False )
+#
+#            except KeyError:
+#                QMessageBox.warning( None, "", "Database: KeyError Exception.")
+#                print "Database: KeyError Exception."
+#
+#            
+#            lv95Sql = ""
+#            result = self.dbobj.read( "SELECT nummer FROM "+self.schema+".tsp_lv95 EXCEPT SELECT nummer FROM "+self.schema+".tsp_lv03" )
+#            try:
+#                if len(result['NUMMER']) == 0:
+#                    QMessageBox.information( None, "", "No missing LV03-TSP.")
+#                else:
+#                    for i in range(len(result['NUMMER'])):
+#                        if i == 0:
+#                            lv95Sql += "("
+#                            lv95Sql += "'" + str(result['NUMMER'][i]) + "'"
+#                        else:
+#                            lv95Sql += ", "
+#                            lv95Sql += "'" + str(result['NUMMER'][i]) + "'"
+#                    lv95Sql += ")"
+#                    
+#                    table = {}
+#                    table["type"] = "pg"        
+#                    table["title"] = "Fehlende TSP (LV03)"
+#                    table["schema"] = self.schema
+#                    table["table"] = "tsp_lv95"
+#                    table["geom"] = "the_geom"
+#                    table["key"] = "ogc_fid"            
+#                    table["sql"] = "nummer in "+ lv95Sql
+#                    table["group"] = ""
+#                    table["style"] = "tsp/tsp_missing.qml"
+#                    vlayerMissingTspLv03 = utils.doShowSimpleLayer( iface, table, False, False, False, True, False )
+#
+#            except KeyError:
+#                QMessageBox.warning( None, "", "Database: KeyError Exception.")
+#                print "Database: KeyError Exception."
+#            
+#
+#        else:
+#            QMessageBox.warning( None, "", "Could not connect to database.")
+#            return
