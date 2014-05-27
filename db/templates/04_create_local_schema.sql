@@ -580,19 +580,19 @@ FROM
    ) as r
  ) as b
  WHERE a.the_geom && b.the_geom
- AND st_distance(st_snaptogrid(a.the_geom, 0.001::double precision), st_snaptogrid(b.the_geom, 0.001::double precision)) = 0
+ AND st_distance(st_snaptogrid(a.the_geom, 0.0001::double precision), st_snaptogrid(b.the_geom, 0.0001::double precision)) = 0
 ) as c
 WHERE geometrytype(the_geom) = 'POINT'
 ORDER BY nummer;
 
 ALTER TABLE LOCAL_SCHEMA.tsp_on_dreiecke_lv03_v OWNER TO ADMIN;
 GRANT SELECT ON TABLE LOCAL_SCHEMA.tsp_on_dreiecke_lv03_v TO USER;
-COMMENT ON VIEW LOCAL_SCHEMA.tsp_on_dreiecke_lv03_v IS 'TSP on Dreiecke LV03 / fuer WFS).';
+COMMENT ON VIEW LOCAL_SCHEMA.tsp_on_dreiecke_lv03_v IS 'TSP on Dreiecke LV03).';
 
 INSERT INTO geometry_columns VALUES ('"', 'LOCAL_SCHEMA', 'tsp_on_dreiecke_lv03_v', 'the_geom', 2, '21781', 'POINT');
 
 CREATE OR REPLACE VIEW LOCAL_SCHEMA.tsp_on_dreiecke_lv95_v AS 
-SELECT DISTINCT ogc_fid, nummer, round(ST_X(the_geom)::numeric, 3) as ycoord, round(ST_Y(the_geom)::numeric, 3) as xcoord, the_geom
+SELECT DISTINCT ogc_fid, nummer, round(ST_X(the_geom)::numeric, 4) as ycoord, round(ST_Y(the_geom)::numeric, 4) as xcoord, the_geom
 FROM
 (
  SELECT a.ogc_fid, a.nummer, a.the_geom
@@ -606,14 +606,14 @@ FROM
    ) as r
  ) as b
  WHERE a.the_geom && b.the_geom
- AND st_distance(st_snaptogrid(a.the_geom, 0.001::double precision), st_snaptogrid(b.the_geom, 0.001::double precision)) = 0
+ AND st_distance(st_snaptogrid(a.the_geom, 0.0001::double precision), st_snaptogrid(b.the_geom, 0.0001::double precision)) = 0
 ) as c
 WHERE geometrytype(the_geom) = 'POINT'
 ORDER BY nummer;
 
 ALTER TABLE LOCAL_SCHEMA.tsp_on_dreiecke_lv95_v OWNER TO ADMIN;
 GRANT SELECT ON TABLE LOCAL_SCHEMA.tsp_on_dreiecke_lv95_v TO USER;
-COMMENT ON VIEW LOCAL_SCHEMA.tsp_on_dreiecke_lv95_v IS 'TSP on Dreiecke LV95 / fuer WFS).';
+COMMENT ON VIEW LOCAL_SCHEMA.tsp_on_dreiecke_lv95_v IS 'TSP on Dreiecke LV95).';
 
 INSERT INTO geometry_columns VALUES ('"', 'LOCAL_SCHEMA', 'tsp_on_dreiecke_lv95_v', 'the_geom', 2, '2056', 'POINT');
 

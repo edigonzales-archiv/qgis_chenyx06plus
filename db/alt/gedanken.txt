@@ -1,5 +1,0 @@
- 1. Es gibt ein Default-Schema ("ch"). Da drin ist die offizielle Dreiecksvermaschung.
- 2. Aus dem Defaultschema kann man neue Schemas auschecken und anschliessend verändern.
- 3. Die Tabelle "dreiecke" hat die Geometrien in beiden Bezugsrahmen. Diese sind zum Verändern gedacht.
- 4. Dazu gibt es zwei separate Tabellen dreiecke_lv03 resp. _lv95. Diese haben den gleichen O
-Orientierungssinn (da gleich generiert... hoffentlich). Diese werden zur Transformation in QGIs gebraucht.
