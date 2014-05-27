@@ -3,6 +3,8 @@ psql -d postgres -c "CREATE ROLE ADMIN CREATEDB LOGIN PASSWORD 'chenyx06';"
 psql -d postgres -c "CREATE ROLE USER LOGIN PASSWORD 'chenyx06';"
 
 createdb --owner ADMIN DB_NAME
+# nur für PostgreSQL 8.4
+#createlang plpgsql DB_NAME
 
 psql -d DB_NAME -f /usr/share/postgresql/9.1/contrib/postgis-1.5/postgis.sql
 psql -d DB_NAME -f /usr/share/postgresql/9.1/contrib/postgis-1.5/spatial_ref_sys.sql
