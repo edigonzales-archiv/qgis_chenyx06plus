@@ -13,7 +13,7 @@ CREATE TABLE LOCAL_SCHEMA.tsp_lv03
   typ integer,
   the_geom geometry,
   CONSTRAINT tsp_lv03_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
+  --CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
   CONSTRAINT enforce_geotype_the_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL),
   CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 21781)
 )
@@ -43,7 +43,7 @@ CREATE TABLE LOCAL_SCHEMA.tsp_lv95
   typ integer,
   the_geom geometry,
   CONSTRAINT tsp_lv95_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
+  --CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
   CONSTRAINT enforce_geotype_the_geom CHECK (geometrytype(the_geom) = 'POINT'::text OR the_geom IS NULL),
   CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 2056)
 )
@@ -153,7 +153,7 @@ CREATE TABLE LOCAL_SCHEMA.dreiecke_lv03_bearbeitung
   typ integer,
   the_geom geometry,
   CONSTRAINT dreiecke_lv03_bearbeitung_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
+  --CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
   CONSTRAINT enforce_geotype_the_geom CHECK (geometrytype(the_geom) = 'POLYGON'::text OR the_geom IS NULL),
   CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 21781),
   CONSTRAINT enforce_triangle_the_geom CHECK (st_npoints(the_geom) = 4),
@@ -184,7 +184,7 @@ CREATE TABLE LOCAL_SCHEMA.dreiecke_lv95_bearbeitung
   typ integer,
   the_geom geometry,
   CONSTRAINT dreiecke_lv95_bearbeitung_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
+  --CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
   CONSTRAINT enforce_geotype_the_geom CHECK (geometrytype(the_geom) = 'POLYGON'::text OR the_geom IS NULL),
   CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 2056),
   CONSTRAINT enforce_triangle_the_geom CHECK (st_npoints(the_geom) = 4),
@@ -310,10 +310,10 @@ CREATE TABLE LOCAL_SCHEMA.dreiecke
   the_geom_lv03 geometry,
   the_geom_lv95 geometry,
   CONSTRAINT dreiecke_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom_lv03 CHECK (st_ndims(the_geom_lv03) = 2),
+  --CONSTRAINT enforce_dims_the_geom_lv03 CHECK (st_ndims(the_geom_lv03) = 2),
   CONSTRAINT enforce_geotype_the_geom_lv03 CHECK (geometrytype(the_geom_lv03) = 'POLYGON'::text OR the_geom_lv03 IS NULL),
   CONSTRAINT enforce_srid_the_geom_lv03 CHECK (st_srid(the_geom_lv03) = 21781),
-  CONSTRAINT enforce_dims_the_geom_lv95 CHECK (st_ndims(the_geom_lv95) = 2),
+  --CONSTRAINT enforce_dims_the_geom_lv95 CHECK (st_ndims(the_geom_lv95) = 2),
   CONSTRAINT enforce_geotype_the_geom_lv95 CHECK (geometrytype(the_geom_lv95) = 'POLYGON'::text OR the_geom_lv03 IS NULL),
   CONSTRAINT enforce_srid_the_geom_lv95 CHECK (st_srid(the_geom_lv95) = 2056)
 )
@@ -659,7 +659,7 @@ CREATE TABLE LOCAL_SCHEMA.triangle_overlap_lv03
   error_type character varying,
   the_geom geometry,
   CONSTRAINT triangle_overlap_lv03_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
+  --CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
   CONSTRAINT enforce_geotype_the_geom CHECK (geometrytype(the_geom) = 'MULTIPOLYGON'::text OR the_geom IS NULL),
   CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 21781)
 )
@@ -684,7 +684,7 @@ CREATE TABLE LOCAL_SCHEMA.triangle_hole_lv03
   error_type character varying,
   the_geom geometry,
   CONSTRAINT triangle_hole_lv03_pkey PRIMARY KEY (ogc_fid),
-  CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
+  --CONSTRAINT enforce_dims_the_geom CHECK (st_ndims(the_geom) = 2),
   CONSTRAINT enforce_geotype_the_geom CHECK (geometrytype(the_geom) = 'MULTIPOLYGON'::text OR the_geom IS NULL),
   CONSTRAINT enforce_srid_the_geom CHECK (st_srid(the_geom) = 21781)
 )
